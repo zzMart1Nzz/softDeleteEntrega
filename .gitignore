@@ -1,0 +1,17 @@
+# Visual Studioko tokiko ezarpenak eta cachea
+.vs/
+*.user
+*.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
+
+# Konpilazioaren emaitzak
+**/[Bb]in/
+**/[Oo]bj/
+*.log
+*.binlog
+
+# Proben behin-behineko emaitzak
+TestResults/
+*.trx
