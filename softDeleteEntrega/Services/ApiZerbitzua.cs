@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Net;
 using System.Net.Http;
@@ -49,6 +50,29 @@ namespace softDeleteEntrega.Services
             return EzarriEgoeraAsync(id, "berreskuratu");
         }
 
+        // HTTP laguntzaileak: ez dute taldekideen endpoint-ik deitzen berez.
+        public async Task<IList<T>> LortuZerrendaAsync<T>(string bidea)
+        {
+            var result = await BidaliAsync<T>(HttpMethod.Get, bidea, null);
+            if (result.Type != "list" || result.DataList == null)
+                throw new InvalidOperationException("APIak ez du espero zen zerrenda itzuli.");
+            return result.DataList;
+        }
+
+        public async Task<T> SortuAsync<T>(string bidea, object datuak) where T : class
+        {
+            if (datuak == null) throw new ArgumentNullException(nameof(datuak));
+            var result = await BidaliAsync<T>(HttpMethod.Post, bidea, json.Serialize(datuak));
+            if (result.Type != "element" || result.Data == null)
+                throw new InvalidOperationException("APIak ez du sortutako elementua itzuli.");
+            return result.Data;
+        }
+
+        public async Task EzabatuAsync(string bidea)
+        {
+            await BidaliAsync<object>(HttpMethod.Delete, bidea, null, edukirikGabeOnartu: true);
+        }
+
         private async Task<Pista> EzarriEgoeraAsync(int id, string ekintza)
         {
             if (id <= 0)
@@ -64,15 +88,23 @@ namespace softDeleteEntrega.Services
         }
 
         private async Task<ApiErantzuna<T>> BidaliAsync<T>(HttpMethod method, string path, string body,
-            bool ezAurkituNull = false)
+            bool ezAurkituNull = false, bool edukirikGabeOnartu = false)
         {
+            Uri relativePath;
+            if (string.IsNullOrWhiteSpace(path) || !Uri.TryCreate(path, UriKind.Relative, out relativePath) ||
+                path.StartsWith("/") || path.StartsWith("\\") || path.Contains("\\"))
+                throw new ArgumentException("APIaren bidea erlatiboa izan behar da, adibidez: api/Pista.", nameof(path));
+
             try
             {
                 using (var request = new HttpRequestMessage(method, path))
                 {
-                    request.Content = new StringContent(body, Encoding.UTF8, "application/json");
+                    if (body != null)
+                        request.Content = new StringContent(body, Encoding.UTF8, "application/json");
                     using (var response = await client.SendAsync(request))
                     {
+                        if (edukirikGabeOnartu && response.StatusCode == HttpStatusCode.NoContent)
+                            return new ApiErantzuna<T> { Status = "success" };
                         string content = await response.Content.ReadAsStringAsync();
                         ApiErantzuna<T> result = null;
                         try
@@ -125,6 +157,7 @@ namespace softDeleteEntrega.Services
             public string Type { get; set; }
             public string Message { get; set; }
             public T Data { get; set; }
+            public List<T> DataList { get; set; }
         }
     }
 }

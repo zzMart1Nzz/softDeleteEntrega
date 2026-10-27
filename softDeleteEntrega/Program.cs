@@ -1,22 +1,27 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using softDeleteEntrega.Services;
 
 namespace softDeleteEntrega
 {
     internal static class Program
     {
         /// <summary>
-        /// Punto de entrada principal para la aplicación.
+        /// Aplikazioaren sarrera-puntua eta zerbitzuen konexioa.
         /// </summary>
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            using (var api = new ApiZerbitzua())
+            {
+                var taldearenZerbitzua = new TaldearenZerbitzua(api);
+                var form = new Form1(taldearenZerbitzua, api);
+                // TODO (INSERT): form.ErreserbaGehitzekoEkintza hemen esleitu.
+                // TALDEKIDEENTZAT.md fitxategiak loturaren adibidea dauka.
+                Application.Run(form);
+            }
         }
     }
 }

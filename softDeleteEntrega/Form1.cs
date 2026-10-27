@@ -24,7 +24,15 @@ namespace softDeleteEntrega
         private TextBox bazkideId;
         private bool pistaDesgaituak;
 
-        public Form1() : this(new TaldearenZerbitzua(), new ApiZerbitzua())
+        // INSERT pantaila prest dagoenean, Program.cs-en esleitu ekintza hau.
+        // true: erreserba gorde da eta zerrenda berritu behar da; false: bertan behera.
+        public Func<Erabiltzailea, Task<bool>> ErreserbaGehitzekoEkintza { get; set; }
+
+        public Form1() : this(new ApiZerbitzua())
+        {
+        }
+
+        private Form1(ApiZerbitzua api) : this(new TaldearenZerbitzua(api), api)
         {
         }
 
@@ -252,8 +260,7 @@ namespace softDeleteEntrega
             Nabigazioa(ErakutsiHasiera);
             var actions = PrestatuTaula(page);
             var gehitu = Itxura.Botoia("+  Erreserba gehitu", Itxura.Nagusia, 200);
-            // TODO (INSERT): hemen ireki taldekidearen sarrera-inprimakia.
-            gehitu.Click += (sender, e) => Mezua("Erreserbak gehitzeko aukera oraindik ez dago erabilgarri.");
+            gehitu.Click += async (sender, e) => await EskatuErreserbaGehitzeaAsync();
             actions.Controls.Add(gehitu);
             var refresh = Itxura.Botoia("Berritu", Itxura.Bigarrena, 110);
             refresh.Click += async (sender, e) => await KargatuErreserbakAsync();
@@ -276,6 +283,24 @@ namespace softDeleteEntrega
                 taula.DataSource = new BindingList<Erreserba>(rows);
                 Mezua(rows.Count == 0 ? "Ez dago erreserbarik." : rows.Count + " erreserba.");
             });
+        }
+
+        private async Task EskatuErreserbaGehitzeaAsync()
+        {
+            if (lanean) return;
+            if (erabiltzailea == null || aurreikuspena)
+            {
+                Mezua("Ekintza hau egiteko, hasi saioa.", true);
+                return;
+            }
+            if (ErreserbaGehitzekoEkintza == null)
+            {
+                Mezua("Erreserbak gehitzeko aukera oraindik ez dago erabilgarri.");
+                return;
+            }
+            bool gehituta = false;
+            await EginAsync(async () => gehituta = await ErreserbaGehitzekoEkintza(erabiltzailea));
+            if (gehituta) await KargatuErreserbakAsync();
         }
 
         private async Task ErakutsiPistakAsync(bool desgaituta)

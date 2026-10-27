@@ -3,6 +3,8 @@
 Ireki `softDeleteEntrega.slnx` Visual Studion eta exekutatu proiektua.
 Interfazea euskaraz dago.
 
+Taldekideen SELECT, INSERT eta DELETE APIak konektatzeko, irakurri [TALDEKIDEENTZAT.md](TALDEKIDEENTZAT.md).
+
 ## Git biltegiak
 
 Biltegi hau C# interfazearena da: [softDeleteEntrega](https://github.com/zzMart1Nzz/softDeleteEntrega).
@@ -54,14 +56,18 @@ APIak arrakasta baieztatzen duenean bakarrik kentzen da errenkada uneko taulatik
 
 ## Taldekideek osatzeko
 
-Konexio-puntuak `Services/ITaldearenZerbitzua.cs` eta `Services/TaldearenZerbitzua.cs` fitxategietan daude. Oraingoz `NotImplementedException` botatzen dute; interfazeak erabilgarri ez dagoela azaltzen du.
+Kontratua `Services/ITaldearenZerbitzua.cs` fitxategian dago. Inplementatzeko lekuak hiru fitxategitan banatuta daude:
+`TaldearenZerbitzua.Select.cs`, `TaldearenZerbitzua.Insert.cs` eta `TaldearenZerbitzua.Delete.cs`.
+Oraingoz `NotImplementedException` botatzen dute; interfazeak erabilgarri ez dagoela azaltzen du.
+`ApiZerbitzua` bezeroak zerrendak irakurtzeko, datuak bidaltzeko eta DELETE egiteko HTTP laguntzaileak ditu,
+baina ez da taldekideen endpoint-ik deitzen haiek metodoak konektatu arte.
 
 | Metodoa / lekua | Egin beharrekoa |
 | --- | --- |
 | `LortuErreserbakAsync` | Erreserben SELECT konektatu. |
 | `LortuPistakAsync(false)` | `desgaituta = 0` duten pistak soilik ekarri. |
 | `LortuPistakAsync(true)` | `desgaituta = 1` duten pistak soilik ekarri. |
-| `GehituErreserbaAsync` | INSERT konektatu. `Form1.cs`-eko `ErakutsiErreserbakAsync` metodoan gehitzeko botoiaren TODOa dago, sarrera-inprimakia gero lotzeko. |
+| `GehituErreserbaAsync` | INSERT konektatu. `Program.cs`-en `form.ErreserbaGehitzekoEkintza` lotu etorkizuneko sarrera-inprimakiari. |
 | `EzabatuPistaAsync` | Desgaitutako pistaren behin betiko DELETE konektatu. Taulako azken botoia jada metodo horretara lotuta dago. |
 
 Zerrenden SELECT endpoint-ak eta iragazkiak, INSERT-a eta behin betiko DELETE-a prestatu gabe daude. SELECT konektatu arte zerrendek ez dute daturik erakusten; soft delete eta berreskuratzeko botoiek benetako errenkadak eta saioa behar dituzte.
@@ -72,12 +78,18 @@ Zerrenden SELECT endpoint-ak eta iragazkiak, INSERT-a eta behin betiko DELETE-a 
 - `Ui/Itxura.cs`: koloreak, botoiak eta taulen itxura.
 - `Models/`: taulen eta saioaren datuak.
 - `Services/ApiZerbitzua.cs`: IDarekin sartzeko POST deia eta inplementatutako bi PATCH deiak.
-- `Services/TaldearenZerbitzua.cs`: gainerako taldekideen TODOak.
+- `Services/TaldearenZerbitzua.*.cs`: SELECT, INSERT eta DELETE arduradun bakoitzaren TODOak.
+- `DTO/ErreserbaSarreraDto.cs`: APIari bidaltzeko data eta orduaren formatuak.
 
 ## Egiaztapena
 
-WinForms eta API proiektuak ondo konpilatu dira. Interfazearen eta HTTP bezeroaren 38 egiaztapen gainditu dira: ID balidazioa, POST gorputza, bazkidea falta denean saiorik ez irekitzea, izen osoa, konexio-erroreak, nabigazioa, taulak, aurreikuspenaren blokeoa eta bi PATCH eragiketak.
+WinForms eta API proiektuak ondo konpilatu dira. Interfazearen eta HTTP bezeroaren 50 egiaztapen gainditu dira:
+ID balidazioa, saioa, nabigazioa, taulak, bi PATCH eragiketak, `dataList` irakurtzea,
+ISO datak eta orduak, DELETE 204/JSON erantzunak eta etorkizuneko INSERT ekintzaren kontrola.
 
 API exekutatuarekin login-aren beste sei HTTP egiaztapen egin dira: falta den ID-a, zero, ID negatiboa, testua, zenbaki hamartarra eta datu-baseko errorearen tratamendua.
 
-MySQLk APIan konfiguratutako erabiltzailearen sarbidea ukatu du (`Access denied`). `Api/ApiErreserba/appsettings.json`-eko `ConnectionStrings:Default` zuzendu behar da; MySQL zerbitzarirako kredentzialak dira, bazkideek programan sartzeko erabiltzen duten IDaz aparte. Horregatik, benetako bazkide batekin sartzea, datu-baseko eguneratzeak eta transakzioaren rollback-a egiaztatzea falta da. Ez da daturik aldatu.
+Benetako saioa ere egiaztatu da: Windows Forms -> API -> MySQL, bazkidearen IDarekin.
+Hasierako MySQL sarbide-errorea tokiko pasahitza zuzenduta konpondu da.
+Bakoitzak bere `Api/ApiErreserba/appsettings.Local.json` fitxategia erabiltzen du; fitxategi hori Git-ek baztertzen du.
+Ez da benetako pisten edo erreserben daturik aldatu login proba horretan.

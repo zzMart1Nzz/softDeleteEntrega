@@ -33,9 +33,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System">
-      <HintPath>..\..\..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7.2\System.dll</HintPath>
-    </Reference>
+    <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Xml.Linq" />
@@ -60,8 +58,12 @@
     <Compile Include="Models\Pista.cs" />
     <Compile Include="Models\Erreserba.cs" />
     <Compile Include="Models\Erabiltzailea.cs" />
+    <Compile Include="DTO\ErreserbaSarreraDto.cs" />
     <Compile Include="Services\ITaldearenZerbitzua.cs" />
     <Compile Include="Services\TaldearenZerbitzua.cs" />
+    <Compile Include="Services\TaldearenZerbitzua.Select.cs" />
+    <Compile Include="Services\TaldearenZerbitzua.Insert.cs" />
+    <Compile Include="Services\TaldearenZerbitzua.Delete.cs" />
     <Compile Include="Services\ApiZerbitzua.cs" />
     <Compile Include="Ui\Itxura.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
